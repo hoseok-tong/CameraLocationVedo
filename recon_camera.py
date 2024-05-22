@@ -43,7 +43,9 @@ class CameraReconstructor:
                 intrinsics = np.stack(intrinsics)   # (n, 3, 3)
                 intrinsics[:,0,2] += 2048   # Transform the image coordinate origin
                 intrinsics[:,1,2] += 2048   # Transform the image coordinate origin
-                intrinsics[:,:2,:2] = intrinsics[:,:2,:2] * (2000/4096)
+                intrinsics[:,0,2] = (intrinsics[:,0,2] - 1024)               # Crop left region
+                intrinsics[:,1,2] = (intrinsics[:,1,2] - 0)                 # Crop top region
+                intrinsics[:,:2,:3] = intrinsics[:,:2,:3] * (1920/3072)     # Reflect the resize 3072x3072 -> 1920x1920 
                 extrinsics = np.stack(extrinsics)   # (n, 3, 3)
                 extrinsics[:, :3, 3] += origin_offset @ extrinsics[:,:3,:3].transpose(0,2,1)   # Transform the center of the object to 0,0,0
 
