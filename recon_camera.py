@@ -16,8 +16,9 @@ class CameraReconstructor:
 
             intrinsics = np.stack(intrinsics)   # (n, 3, 3)
             extrinsics = np.stack(extrinsics)   # (n, 4, 4)
-            extrinsics[:, :3, 3] -= origin_offset   # Transform the center of the object to 0,0,0
-            extrinsics[:, :3, 3] *= 0.001       # do * 0.001 for MVS .txt
+            # extrinsics[:, :3, 3] += extrinsics[:,:3,:3].transpose(-2,-1) @ origin_offset   # Transform the center of the object to 0,0,0
+            # extrinsics[:, :3, 3] -= origin_offset   # Transform the center of the object to 0,0,0
+            # extrinsics[:, :3, 3] *= 0.001       # do * 0.001 for MVS .txt
 
         else:
             if calib_path.split('.')[-1] == 'xml':  # metashape .xml
@@ -40,8 +41,12 @@ class CameraReconstructor:
                     extrinsics.append(tmp_extrinsic)
 
                 intrinsics = np.stack(intrinsics)   # (n, 3, 3)
+                intrinsics[:,0,2] += 2048   # Transform the image coordinate origin
+                intrinsics[:,1,2] += 2048   # Transform the image coordinate origin
+                intrinsics[:,:2,:2] = intrinsics[:,:2,:2] * (2000/4096)
                 extrinsics = np.stack(extrinsics)   # (n, 3, 3)
-                extrinsics[:, :3, 3] -= origin_offset   # Transform the center of the object to 0,0,0
+                extrinsics[:, :3, 3] += origin_offset @ extrinsics[:,:3,:3].transpose(0,2,1)   # Transform the center of the object to 0,0,0
+
 
             elif calib_path.split('.')[-1] == 'mat':    # matlab calibration .mat
                 print(calib_path)
@@ -51,7 +56,7 @@ class CameraReconstructor:
                 
                 extrinsics[:, :3, :3] = camera_params['R'] @ np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
                 extrinsics[:, :3, 3] = camera_params['T']
-                extrinsics[:, :3, 3] -= origin_offset
+                # extrinsics[:, :3, 3] += origin_offset @ extrinsics[:,:3,:3].transpose(0,2,1)   # Transform the center of the object to 0,0,0
 
         
 

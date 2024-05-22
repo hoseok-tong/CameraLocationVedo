@@ -262,7 +262,7 @@ def load_obj(filename):
                 continue
             elif parts[0] == 'v':  # This line describes a vertex
                 # Convert the remaining parts to float and add to vertices list
-                vertices.append([float(p) for p in parts[1:]])
+                vertices.append([float(p) for p in parts[1:4]])
             elif parts[0] == 'f':  # This line describes a face
                 # Convert the remaining parts to integer index (subtract 1 because OBJ indexing starts at 1)
                 face = [int(p.split('/')[0]) - 1 for p in parts[1:]]

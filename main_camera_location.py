@@ -60,9 +60,14 @@ if __name__ == '__main__':
     # calib_path = sorted(glob("D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/cams/frame0005/*.txt"))  # Folder containing the .txt files
     # calib_path = sorted(glob("./output/cams/*.txt"))  # Folder containing the .txt files
     # calib_path = 'data/initial_camera_params_2024-01-04.mat'
-    calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/20240104_Face_KHS_cameras.xml'
+    # calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/metashape/20240104_Face_KHS_cameras.xml'
+    calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_hairrecon/20240515_hairrecon_cameras.xml'
 
     mesh_path = None
+    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/metashape/20240104_Face_KHS_obj_origin.obj'
+    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/metashape/20240104_Face_KHS_obj.obj'
+    mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_hairrecon/20240515_hairrecon_obj.obj'
+    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_hairrecon/20240515_hairrecon_obj_origin.obj'
     # mesh_path = 'D:/workspace/pose_B2_recon/data/20240515_hairrecon_simpl.obj'
     # mesh_path = 'D:/workspace/pose_B2_recon/data/head_prior_mvs.obj'
     
