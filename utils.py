@@ -251,9 +251,11 @@ def load_camera_params_mat(calibpath, is_meters=False):
 
 
 def load_obj(filename):
-    """ Load OBJ file into vertices and faces. """
+    """ Load OBJ file into a dictionary containing vertices, optional vertex colors, and faces. """
     vertices = []
+    colors = []
     faces = []
+    has_colors = False
     
     with open(filename, 'r') as file:
         for line in file:
@@ -261,24 +263,42 @@ def load_obj(filename):
             if not parts:
                 continue
             elif parts[0] == 'v':  # This line describes a vertex
-                # Convert the remaining parts to float and add to vertices list
-                vertices.append([float(p) for p in parts[1:4]])
+                if len(parts) > 4:
+                    # Convert the first three parts to float for vertex coordinates
+                    vertex = [float(p) for p in parts[1:4]]
+                    # Convert the remaining parts to float for vertex colors
+                    color = [float(p) for p in parts[4:]]
+                    vertices.append(vertex)
+                    colors.append(color)
+                    has_colors = True
+                else:
+                    vertex = [float(p) for p in parts[1:4]]
+                    vertices.append(vertex)
             elif parts[0] == 'f':  # This line describes a face
                 # Convert the remaining parts to integer index (subtract 1 because OBJ indexing starts at 1)
                 face = [int(p.split('/')[0]) - 1 for p in parts[1:]]
                 faces.append(face)
 
-    # Convert vertices list to a NumPy array for better performance
+    # Convert lists to NumPy arrays for better performance
     vertices = np.array(vertices)
+    colors = np.array(colors) if has_colors else None
     
-    return vertices, faces
+    return {
+        "vertices": vertices,
+        "colors": colors,
+        "faces": faces
+    }
 
 
-def save_obj(filename, vertices, faces):
-    """ Save vertices and faces to an OBJ file. """
+def save_obj(filename, vertices, faces, colors=None):
+    """ Save vertices, optional vertex colors, and faces to an OBJ file. """
     with open(filename, 'w') as file:
-        for vertex in vertices:
-            file.write('v {:.6f} {:.6f} {:.6f}\n'.format(*vertex))
+        if colors is not None and len(colors) == len(vertices):
+            for vertex, color in zip(vertices, colors):
+                file.write('v {:.6f} {:.6f} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(*vertex, *color))
+        else:
+            for vertex in vertices:
+                file.write('v {:.6f} {:.6f} {:.6f}\n'.format(*vertex))
         
         for face in faces:
             # OBJ format uses 1-based indexing for faces

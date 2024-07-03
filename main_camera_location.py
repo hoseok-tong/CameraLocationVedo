@@ -61,12 +61,12 @@ if __name__ == '__main__':
     
     image_size = (1984,1984)
     
-    # calib_path = sorted(glob(os.path.abspath("./data/example_mvs_txt/cams/*.txt"))) # Folder containing the .txt files
-    calib_path = os.path.abspath('./data/example_metashape/cameras.xml')
+    calib_path = sorted(glob(os.path.abspath("./data/example_mvs_txt/cams/*.txt"))) # Folder containing the .txt files
+    # calib_path = os.path.abspath('./data/example_metashape/cameras.xml')
     # calib_path = os.path.abspath('./data/test/cameras.xml')
 
-    # mesh_path = os.path.abspath('./data/example_mvs_txt/filtered_mesh_9.obj')
-    mesh_path = os.path.abspath('./data/example_metashape/mesh3D.obj')
+    mesh_path = os.path.abspath('./data/example_mvs_txt/filtered_mesh_9.obj')
+    # mesh_path = os.path.abspath('./data/example_metashape/mesh3D.obj')
     # mesh_path = os.path.abspath('./data/test/mesh3D.obj')
 
     window = Visualizer(image_size, calib_path, mesh_path)

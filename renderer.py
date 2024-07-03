@@ -106,15 +106,20 @@ class CameraPlotter:
     
     def init_mesh(self, mesh_path, calib_path):
         if isinstance(calib_path, list):
-            v, f = load_obj(mesh_path)              # when .txt format, mm scale
+            obj_dict = load_obj(mesh_path)              # when .txt format, mm scale
+            v = obj_dict['vertices']
+            f = obj_dict['faces']
             origin_offset = v.mean(axis=0)*0.0      # when .txt format, ignore origin_offset
         else:
-            v, f = load_obj(mesh_path)
+            obj_dict = load_obj(mesh_path)
+            v = obj_dict['vertices']
+            f = obj_dict['faces']
+            c = obj_dict['colors']            
             v *= 1000.0             # when .xml format, m -> mm
             origin_offset = v.mean(axis=0)
             v = v - origin_offset   # when .xml format, get origin_offset, transform system to origin
             origin_mesh_path = mesh_path.split('.')[0] + '_1000_origin.obj'
-            save_obj(origin_mesh_path, v, f)
+            save_obj(origin_mesh_path, v, f, c)
 
         self.mesh = Mesh(v, f)
         
