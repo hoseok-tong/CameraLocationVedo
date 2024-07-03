@@ -1,7 +1,8 @@
+import os
 import json
 import numpy as np
 import vedo
-from utils import load_obj
+from utils import load_obj, save_obj
 
 
 def load_config(config_path):
@@ -58,12 +59,12 @@ class Cameras:
             vp.remove(self.cameras[key])
     
     @staticmethod
-    def get_name(nametxt, transl, scale=0.05):  # control scale heuristically, default=0.05
+    def get_name(nametxt, transl, scale=200):  # control scale heuristically, 200(mm scale)
         name = vedo.Text3D(nametxt, pos=transl, s=scale)
         return name
     
     @staticmethod
-    def get_pyramid(rotmat, transl, scale=0.1): # control scale heuristically, default=0.1
+    def get_pyramid(rotmat, transl, scale=500): # control scale heuristically, 500(mm scale)
         pyramid = vedo.Pyramid(c='w', alpha=0.5, s=scale, axis=(0, 0, -1), height=scale * 1.5).rotate_z(45)
         trfm = np.eye(4)
         trfm[:3, :3] = rotmat
@@ -72,7 +73,7 @@ class Cameras:
         return pyramid
 
     @staticmethod
-    def get_axes(rotmat, transl, scale=0.2):    # control scale heuristically, default=0.2
+    def get_axes(rotmat, transl, scale=400):        # control scale heuristically, 400(mm scale)
         cam_x_axis = np.matmul([1, 0, 0], rotmat.T) # Red x
         cam_y_axis = np.matmul([0, 1, 0], rotmat.T) # Green y
         cam_z_axis = np.matmul([0, 0, 1], rotmat.T) # Blue z
@@ -93,9 +94,6 @@ class CameraPlotter:
         # Add origin, axes
         scale=5
         self.vp.add(vedo.Point([0.0, 0.0, 0.0], c='r'))
-        # self.vp.add(vedo.Arrow(np.array([0.0, 0.0, 0.0]), np.array([1., 0., 0.]) * scale, c='r', alpha=0.5, shaft_radius=0.003, head_radius=0.01))
-        # self.vp.add(vedo.Arrow(np.array([0.0, 0.0, 0.0]), np.array([0., 1., 0.]) * scale, c='g', alpha=0.5, shaft_radius=0.003, head_radius=0.01))
-        # self.vp.add(vedo.Arrow(np.array([0.0, 0.0, 0.0]), np.array([0., 0., 1.]) * scale, c='b', alpha=0.5, shaft_radius=0.003, head_radius=0.01))
 
         self.cameras = None
         self.origin = None
@@ -106,11 +104,17 @@ class CameraPlotter:
             self.remove_cameras()
         self.cameras = Cameras(camera_params)
     
-    def init_mesh(self, mesh_path):
-        v, f = load_obj(mesh_path)
-        v = v
-        origin_offset = v.mean(axis=0)
-        v = v - origin_offset
+    def init_mesh(self, mesh_path, calib_path):
+        if isinstance(calib_path, list):
+            v, f = load_obj(mesh_path)              # when .txt format, mm scale
+            origin_offset = v.mean(axis=0)*0.0      # when .txt format, ignore origin_offset
+        else:
+            v, f = load_obj(mesh_path)
+            v *= 1000.0             # when .xml format, m -> mm
+            origin_offset = v.mean(axis=0)
+            v = v - origin_offset   # when .xml format, get origin_offset, transform system to origin
+            origin_mesh_path = mesh_path.split('.')[0] + '_1000_origin.obj'
+            save_obj(origin_mesh_path, v, f)
 
         self.mesh = Mesh(v, f)
         

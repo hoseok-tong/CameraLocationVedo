@@ -4,9 +4,9 @@ import numpy as np
 from utils import extract_camera_parameters_xml, read_camera_parameters, load_camera_params_mat
 
 class CameraReconstructor:
-    def __init__(self, calib_path, origin_offset):
+    def __init__(self, calib_path, origin_offset, image_size):
         if isinstance(calib_path, list):    # MVS .txt
-            print(calib_path[0])
+            print(f'calib_path: {calib_path[0]}')
             intrinsics = []
             extrinsics = []
             for calib in calib_path:
@@ -18,11 +18,10 @@ class CameraReconstructor:
             extrinsics = np.stack(extrinsics)   # (n, 4, 4)
             # extrinsics[:, :3, 3] += extrinsics[:,:3,:3].transpose(-2,-1) @ origin_offset   # Transform the center of the object to 0,0,0
             # extrinsics[:, :3, 3] -= origin_offset   # Transform the center of the object to 0,0,0
-            # extrinsics[:, :3, 3] *= 0.001       # do * 0.001 for MVS .txt
 
         else:
             if calib_path.split('.')[-1] == 'xml':  # metashape .xml
-                print(calib_path)
+                print(f'calib_path: {calib_path}')
                 camera_params = extract_camera_parameters_xml(calib_path)
 
                 intrinsics = []
@@ -30,8 +29,6 @@ class CameraReconstructor:
                 for idx in range(len(camera_params)):
                     tmp_transform = camera_params[idx]['transform_matrix'].astype(np.float32)
                     tmp_intrinsic = np.array(camera_params[idx]['intrinsic_matrix']).astype(np.float32)
-                    tmp_intrinsic[0, 2] -= 0  # Adjust cx for cropping
-                    tmp_intrinsic[1, 2] -= 0    # Adjust cy for cropping
 
                     tmp_extrinsic = np.eye(4).astype(np.float32)
                     tmp_extrinsic[:3, :3] = tmp_transform[:3, :3].transpose()
@@ -40,27 +37,31 @@ class CameraReconstructor:
                     intrinsics.append(tmp_intrinsic)
                     extrinsics.append(tmp_extrinsic)
 
-                intrinsics = np.stack(intrinsics)   # (n, 3, 3)
-                intrinsics[:,0,2] += 2048   # Transform the image coordinate origin
-                intrinsics[:,1,2] += 2048   # Transform the image coordinate origin
-                intrinsics[:,0,2] = (intrinsics[:,0,2] - 1024)               # Crop left region
-                intrinsics[:,1,2] = (intrinsics[:,1,2] - 0)                 # Crop top region
-                intrinsics[:,:2,:3] = intrinsics[:,:2,:3] * (1920/3072)     # Reflect the resize 3072x3072 -> 1920x1920 
-                extrinsics = np.stack(extrinsics)   # (n, 3, 3)
-                extrinsics[:, :3, 3] += origin_offset @ extrinsics[:,:3,:3].transpose(0,2,1)   # Transform the center of the object to 0,0,0
+                intrinsics = np.stack(intrinsics)       # (n, 3, 3)
+                intrinsics[:,0,2] += image_size[0]/2    # Transform the image coordinate origin (image coord: center -> top left)
+                intrinsics[:,1,2] += image_size[1]/2    # Transform the image coordinate origin (image coord: center -> top left)
+                # intrinsics[:,0,2] = (intrinsics[:,0,2] - 1024)              # Crop left region
+                # intrinsics[:,1,2] = (intrinsics[:,1,2] - 0)                 # Crop top region
+                # intrinsics[:,:2,:3] = intrinsics[:,:2,:3] * (1920/3072)     # Reflect the resize 3072x3072 -> 1920x1920 
+                extrinsics = np.stack(extrinsics)       # (n, 3, 3)
+                extrinsics[:, :3, 3] *= 1000            # m -> mm scale
+                extrinsics[:, :3, 3] += origin_offset @ extrinsics[:,:3,:3].transpose(0,2,1)   # Transform the center of the system to 0,0,0
+                np.savez(os.path.join(os.path.split(calib_path)[0], 'cameras.npz'), intrinsics=intrinsics, extrinsics=extrinsics)
+                save_cams_path = os.path.join(os.path.split(calib_path)[0], 'cams')
+                os.makedirs(save_cams_path, exist_ok=True)
+                self.save_camera_parameters(save_cams_path, intrinsics, extrinsics)
 
 
             elif calib_path.split('.')[-1] == 'mat':    # matlab calibration .mat
-                print(calib_path)
+                print(f'calib_path: {calib_path}')
                 camera_params = load_camera_params_mat(calib_path)
                 intrinsics = camera_params['K']     # (n, 3, 3)
                 extrinsics = np.tile(np.eye(4), (len(intrinsics), 1, 1))    # (n, 4, 4)
                 
                 extrinsics[:, :3, :3] = camera_params['R'] @ np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
                 extrinsics[:, :3, 3] = camera_params['T']
-                # extrinsics[:, :3, 3] += origin_offset @ extrinsics[:,:3,:3].transpose(0,2,1)   # Transform the center of the object to 0,0,0
+                extrinsics[:, :3, 3] += origin_offset @ extrinsics[:,:3,:3].transpose(0,2,1)   # Transform the center of the system to 0,0,0
 
-        
 
         self.camera_params = {
             'K': intrinsics[:, :3, :4],
@@ -68,14 +69,10 @@ class CameraReconstructor:
             'T': extrinsics[:, :3, 3]
         }
 
-        os.makedirs('./output/cams', exist_ok=True)
-        np.savez('./output/cameras.npz', intrinsics=intrinsics, extrinsics=extrinsics)
-        self.save_camera_parameters(intrinsics, extrinsics)
 
-
-    def save_camera_parameters(self, intrinsics, extrinsics):
+    def save_camera_parameters(self, save_cams_path, intrinsics, extrinsics):
         for i, (K, E) in enumerate(zip(intrinsics, extrinsics)):
-            filename = f"./output/cams/{i:08d}_cam.txt"
+            filename = f"{save_cams_path}/{i:08d}_cam.txt"
             with open(filename, 'w') as f:
                 f.write("extrinsic\n")
                 for row in E:
@@ -88,4 +85,5 @@ class CameraReconstructor:
 if __name__ == "__main__":
     # Example usage
     origin_offset = np.array([0, 0, 0])
-    c = CameraReconstructor('path_to_calibration_file.xml', origin_offset)
+    image_size = (1984,1984)
+    c = CameraReconstructor('path_to_calibration_file.xml', origin_offset, image_size)

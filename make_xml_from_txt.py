@@ -80,8 +80,6 @@ def main(txt_folder, output_xml):
 
 
 if __name__ == "__main__":
-    txt_folder = "D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/cams/frame0005"  # Folder containing the .txt files
-    # txt_folder = "D:/workspace/NeuralHaircut/implicit-hair-data/data/custom/20240104_Face_KHS_crop/cams"  # Folder containing the .txt files
-    # txt_folder = "D:/workspace/NeuralHaircut/implicit-hair-data/data/custom/20240515_hairrecon/cams"  # Folder containing the .txt files
-    output_xml = "./output/20240104_Face_KHS.xml"  # Output XML file path
+    txt_folder = "E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/cams/frame0005"  # Folder containing the .txt files
+    output_xml = "E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/cams/frame0005/cameras.xml"  # Output XML file path
     main(txt_folder, output_xml)

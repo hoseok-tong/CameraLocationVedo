@@ -274,6 +274,17 @@ def load_obj(filename):
     return vertices, faces
 
 
+def save_obj(filename, vertices, faces):
+    """ Save vertices and faces to an OBJ file. """
+    with open(filename, 'w') as file:
+        for vertex in vertices:
+            file.write('v {:.6f} {:.6f} {:.6f}\n'.format(*vertex))
+        
+        for face in faces:
+            # OBJ format uses 1-based indexing for faces
+            face_indices = [str(idx + 1) for idx in face]
+            file.write('f ' + ' '.join(face_indices) + '\n')
+
 
 def save_hair2pc(path, vert, color=None):
     """

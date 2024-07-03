@@ -1,3 +1,4 @@
+import os
 import sys
 import numpy as np
 
@@ -11,7 +12,7 @@ from recon_camera import CameraReconstructor
 
 
 class Visualizer(QtWidgets.QWidget):
-    def __init__(self, calib_path, mesh_path=None, parent=None):
+    def __init__(self, image_size, calib_path, mesh_path=None, parent=None):
         super().__init__(parent)
         self.timer = QtCore.QTimer()
         self.timer.setInterval(33)
@@ -19,7 +20,7 @@ class Visualizer(QtWidgets.QWidget):
         self.counter = 0
         self.play = False
         self.init_ui()
-        self.load_data(calib_path, mesh_path)
+        self.load_data(calib_path, mesh_path, image_size)
     
     def init_ui(self):
         renderer_before = QVTKRenderWindowInteractor(self)
@@ -31,14 +32,14 @@ class Visualizer(QtWidgets.QWidget):
         layout.addWidget(renderer_before,  0, 0, 1, 1)
         self.setLayout(layout)
     
-    def load_data(self, calib_path, mesh_path):
+    def load_data(self, calib_path, mesh_path, image_size):
         if mesh_path != None:
-            origin_offset = self.plotter_before.init_mesh(mesh_path)
+            origin_offset = self.plotter_before.init_mesh(mesh_path, calib_path)
             self.plotter_before.add_mesh()
         else:
             origin_offset = np.array([0.0, 0.0, 0.0]) 
 
-        self.reconstructor = CameraReconstructor(calib_path, origin_offset)
+        self.reconstructor = CameraReconstructor(calib_path, origin_offset, image_size)
         camera_params = self.reconstructor.camera_params
         self.plotter_before.load_cameras(camera_params)
         self.plotter_before.add_cameras()
@@ -57,33 +58,17 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('fusion')
     
-    # calib_path = sorted(glob("D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/cams/frame0005/*.txt"))  # Folder containing the .txt files
-    # calib_path = sorted(glob("./output/cams/*.txt"))  # Folder containing the .txt files
-    # calib_path = 'data/initial_camera_params_2024-01-04.mat'
-    # calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/metashape/20240104_Face_KHS_cameras.xml'
-    # calib_path = 'D:/workspace/NeuralHaircut/implicit-hair-data/data/custom/20240515_humanhair_seq/image/20240515_humanhair_seq_cameras.xml'
-    # calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_hairreal/selected/20240515_hairreal_cameras.xml'
-    # calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_hairrecon/20240515_hairrecon_cameras.xml'
-    # calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_waverecon/20240515_waverecon_cameras.xml'
-    # calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240520/20240520_hairreal/selected/20240520_hairreal_cameras.xml'
-    # calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240520/20240520_hairstraight/20240520_hairstraight_cameras.xml'
-    calib_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240520/20240520_hairwave/20240520_hairwave_cameras.xml'
+    image_size = (1984,1984)
 
-    mesh_path = None
-    # mesh_path = 'D:/workspace/pose_B2_recon/data/head_prior_mvs.obj'
-    # mesh_path = 'D:/workspace/pose_B2_recon/data/20240515_hairrecon_simpl.obj'
-    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/metashape/20240104_Face_KHS_obj_origin.obj'
-    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/metashape/20240104_Face_KHS_obj.obj'
-    # mesh_path = 'D:/workspace/NeuralHaircut/implicit-hair-data/data/custom/20240515_humanhair_seq/image/20240515_humanhair_seq_obj.obj'
-    # mesh_path = 'D:/workspace/NeuralHaircut/implicit-hair-data/data/custom/20240515_humanhair_seq/image/20240515_humanhair_seq_obj.obj'
-    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_hairreal/selected/20240515_hairreal_obj_facecrop.obj'
-    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_hairrecon/20240515_hairrecon_obj_facecrop.obj'
-    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240515/20240515_waverecon/20240515_waverecon_obj_facecrop.obj'
-    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240520/20240520_hairreal/selected/20240520_hairreal_obj_facecrop.obj'
-    # mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240520/20240520_hairstraight/20240520_hairstraight_obj_facecrop.obj'
-    mesh_path = 'D:/DATA/MDI_Database_1/BYRoad_Studio/20240520/20240520_hairwave/20240520_hairwave_obj_facecrop.obj'
-    
-    window = Visualizer(calib_path, mesh_path)
+    # calib_path = sorted(glob("E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/cams/frame0005/*.txt"))  # Folder containing the .txt files
+    # calib_path = 'E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_KHS_metashape/cameras.xml'
+    calib_path = './data/test/cameras.xml'
+
+    # mesh_path = 'E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/points_mvsnet/frame0005/3D_Scan/filtered_mesh_9.obj'
+    # mesh_path = 'E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_KHS_metashape/mesh3D.obj'
+    mesh_path = './data/test/mesh3D.obj'
+
+    window = Visualizer(image_size, os.path.abspath(calib_path), os.path.abspath(mesh_path))
 
     window.setWindowTitle('Visualizer')
     window.setGeometry(100, 200, 600, 800)
