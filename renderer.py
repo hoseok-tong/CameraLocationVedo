@@ -59,12 +59,12 @@ class Cameras:
             vp.remove(self.cameras[key])
     
     @staticmethod
-    def get_name(nametxt, transl, scale=200):  # control scale heuristically, 200(mm scale)
+    def get_name(nametxt, transl, scale=100):  # control scale heuristically, 200(mm scale)
         name = vedo.Text3D(nametxt, pos=transl, s=scale)
         return name
     
     @staticmethod
-    def get_pyramid(rotmat, transl, scale=500): # control scale heuristically, 500(mm scale)
+    def get_pyramid(rotmat, transl, scale=250): # control scale heuristically, 500(mm scale)
         pyramid = vedo.Pyramid(c='w', alpha=0.5, s=scale, axis=(0, 0, -1), height=scale * 1.5).rotate_z(45)
         trfm = np.eye(4)
         trfm[:3, :3] = rotmat
@@ -73,7 +73,7 @@ class Cameras:
         return pyramid
 
     @staticmethod
-    def get_axes(rotmat, transl, scale=400):        # control scale heuristically, 400(mm scale)
+    def get_axes(rotmat, transl, scale=200):        # control scale heuristically, 400(mm scale)
         cam_x_axis = np.matmul([1, 0, 0], rotmat.T) # Red x
         cam_y_axis = np.matmul([0, 1, 0], rotmat.T) # Green y
         cam_z_axis = np.matmul([0, 0, 1], rotmat.T) # Blue z

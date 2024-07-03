@@ -20,6 +20,7 @@ class Visualizer(QtWidgets.QWidget):
         self.counter = 0
         self.play = False
         self.init_ui()
+
         self.load_data(calib_path, mesh_path, image_size)
     
     def init_ui(self):
@@ -59,16 +60,16 @@ if __name__ == '__main__':
     app.setStyle('fusion')
     
     image_size = (1984,1984)
+    
+    # calib_path = sorted(glob(os.path.abspath("./data/example_mvs_txt/cams/*.txt"))) # Folder containing the .txt files
+    calib_path = os.path.abspath('./data/example_metashape/cameras.xml')
+    # calib_path = os.path.abspath('./data/test/cameras.xml')
 
-    # calib_path = sorted(glob("E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/cams/frame0005/*.txt"))  # Folder containing the .txt files
-    # calib_path = 'E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_KHS_metashape/cameras.xml'
-    calib_path = './data/test/cameras.xml'
+    # mesh_path = os.path.abspath('./data/example_mvs_txt/filtered_mesh_9.obj')
+    mesh_path = os.path.abspath('./data/example_metashape/mesh3D.obj')
+    # mesh_path = os.path.abspath('./data/test/mesh3D.obj')
 
-    # mesh_path = 'E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_Face_KHS/Output/points_mvsnet/frame0005/3D_Scan/filtered_mesh_9.obj'
-    # mesh_path = 'E:/DATA/MDI_Database_1/BYRoad_Studio/20240104/20240104_KHS_metashape/mesh3D.obj'
-    mesh_path = './data/test/mesh3D.obj'
-
-    window = Visualizer(image_size, os.path.abspath(calib_path), os.path.abspath(mesh_path))
+    window = Visualizer(image_size, calib_path, mesh_path)
 
     window.setWindowTitle('Visualizer')
     window.setGeometry(100, 200, 600, 800)
